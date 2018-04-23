@@ -64,4 +64,8 @@ buyback_roi_output <- buyback_roi %>%
 
 # create exhibits ---------------------------------------------------------
 
+# - overall table, bar graph
+# - scatter plot with buyback ROI vs. buyback eff; sized by % repurchased
+# - summary table on top
+# - p:b vs repurchase on right; cash flows or shares repurchased on left
 
