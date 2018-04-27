@@ -69,3 +69,84 @@ buyback_roi_output <- buyback_roi %>%
 # - summary table on top
 # - p:b vs repurchase on right; cash flows or shares repurchased on left
 
+ft_buyback_summary1 <- buyback_roi_output %>%
+  slice(1:25) %>%
+  regulartable() %>%
+  ft_theme_aon() %>%
+  add_title_header("Top 25 most effective share repurchasers")
+
+gg_roi_scatter <- buyback_roi %>%
+  ggplot(aes(x = irr, y = buyback_effectiveness, size = pct_market_cap)) +
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+  geom_point() +
+  ggrepel::geom_text_repel(aes(label = ticker), size = 3) +
+  scale_x_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
+                     limits = c(-0.25, 0.75)) +
+  scale_y_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1),
+                     limits = c(-0.25, 0.75)) +
+  scale_size_continuous(name = "% of Mkt Cap", 
+                    labels = scales::percent_format()) +
+  xlab("Buyback ROI") + ylab("Buyback Effectiveness") +
+  theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed")) +
+  ggtitle("Buyback ROI vs. Buyback Effectiveness by Company")
+
+
+gg_col_roi <- buyback_roi %>%
+  mutate(ticker = fct_reorder(ticker, irr)) %>%
+  mutate(y_irr = if_else(irr > 0, irr + 0.03, irr - 0.03)) %>%
+  ggplot(aes(x = ticker, y = irr)) +
+  geom_col() + 
+  geom_text(aes(y = y_irr, x = ticker, label = pct_format(irr, digits = 0)), size = 3) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(), 
+                     breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
+                     limits = c(-0.25, 0.75)) +
+  xlab(NULL) + ylab("Buyback ROI") +
+  theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed"),
+        panel.grid.major.y = element_blank()) +
+  ggtitle("Buyback ROI by Company (2013 - 2017)")
+
+gg_col_eff <- buyback_roi %>%
+  filter(!is.na(buyback_effectiveness) & buyback_effectiveness > -1) %>%
+  mutate(ticker = fct_reorder(ticker, buyback_effectiveness)) %>%
+  mutate(y_irr = if_else(buyback_effectiveness > 0, buyback_effectiveness + 0.02, buyback_effectiveness - 0.02)) %>%
+  ggplot(aes(x = ticker, y = buyback_effectiveness)) +
+  geom_col() + 
+  geom_text(aes(y = y_irr, x = ticker, label = pct_format(buyback_effectiveness, digits = 0)), size = 3) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(), 
+                     breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
+                     limits = c(-0.25, 0.75)) +
+  xlab(NULL) + ylab("Buyback ROI") +
+  theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed"),
+        panel.grid.major.y = element_blank()) +
+  ggtitle("Buyback Effectiveness by Company (2013 - 2017)")
+
+
+# create deck -------------------------------------------------------------
+
+# start with blank pptx template
+pptx <- read_pptx("share_buyback_roi.pptx")
+
+pptx <- pptx %>% 
+  add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
+  ph_with_text("Summary table", type = "title") %>%
+  ph_with_flextable(ft_buyback_summary1, type = "body") %>%
+  add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
+  ph_with_text("Scatterplot", type = "title") %>%
+  ph_with_gg(gg_roi_scatter) %>%
+  add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
+  ph_with_text("gg_col_roi", type = "title") %>%
+  ph_with_gg(gg_col_roi) %>%
+  add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
+  ph_with_text("gg_col_eff", type = "title") %>%
+  ph_with_gg(gg_col_eff)
+
+# write out slide deck
+print(pptx, target = "share_buyback_roi2.pptx") %>% invisible()
+
+
+
+
+
+
