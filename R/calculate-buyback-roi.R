@@ -73,18 +73,24 @@ ft_buyback_summary1 <- buyback_roi_output %>%
   slice(1:25) %>%
   regulartable() %>%
   ft_theme_aon() %>%
+  fontsize(part = "all", size = 8) %>%
+  autofit(add_w = 0.05, add_h = 0.0) %>%
+  height_all(height = 0.2, part = "body") %>%
+  width(j = 1:2, width = 0.54) %>%
+  width(j = 3:11, width = 0.9) %>%
   add_title_header("Top 25 most effective share repurchasers")
 
 gg_roi_scatter <- buyback_roi %>%
   ggplot(aes(x = irr, y = buyback_effectiveness, size = pct_market_cap)) +
-  geom_hline(yintercept = 0) + geom_vline(xintercept = 0) +
+  geom_hline(yintercept = 0, size = 0.5) + geom_vline(xintercept = 0, size = 0.5) +
   geom_point() +
-  ggrepel::geom_text_repel(aes(label = ticker), size = 3) +
+  ggrepel::geom_text_repel(aes(label = ticker), size = 3, colour = aon.colors$darkgray, 
+                           segment.color = aon.colors$lightgray, segment.size = 0.25, force = 2) +
   scale_x_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
                      limits = c(-0.25, 0.75)) +
   scale_y_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1),
                      limits = c(-0.25, 0.75)) +
-  scale_size_continuous(name = "% of Mkt Cap", 
+  scale_size_continuous(name = "% of Mkt Cap \n Repurchased", 
                     labels = scales::percent_format()) +
   xlab("Buyback ROI") + ylab("Buyback Effectiveness") +
   theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed")) +
@@ -131,16 +137,16 @@ pptx <- read_pptx("share_buyback_roi.pptx")
 pptx <- pptx %>% 
   add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
   ph_with_text("Summary table", type = "title") %>%
-  ph_with_flextable(ft_buyback_summary1, type = "body") %>%
+  ph_with_flextable(ft_buyback_summary1, type = "body", index = 2) %>%
   add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
-  ph_with_text("Scatterplot", type = "title") %>%
-  ph_with_gg(gg_roi_scatter) %>%
+  ph_with_text("Buyback ROI vs. Buyback Effectiveness by Company", type = "title") %>%
+  ph_with_gg(gg_roi_scatter, type = "body", index = 2) %>%
   add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
-  ph_with_text("gg_col_roi", type = "title") %>%
-  ph_with_gg(gg_col_roi) %>%
+  ph_with_text("Buyback ROI by Company", type = "title") %>%
+  ph_with_gg(gg_col_roi, type = "body", index = 2) %>%
   add_slide(layout = "Title and Content", master = "Template with examples_US letter") %>%
-  ph_with_text("gg_col_eff", type = "title") %>%
-  ph_with_gg(gg_col_eff)
+  ph_with_text("Buyback Effectiveness by Company", type = "title") %>%
+  ph_with_gg(gg_col_eff, type = "body", index = 2)
 
 # write out slide deck
 print(pptx, target = "share_buyback_roi2.pptx") %>% invisible()
