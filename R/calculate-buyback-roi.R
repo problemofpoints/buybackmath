@@ -167,7 +167,7 @@ create_by_company_slide <- function(co_ticker, company_name, data, data_roi, sto
                        labels = data_filtered$yr_qtr[seq(from = 1, to = nrow(data_filtered), by = 2)]) +
     scale_y_continuous(labels = scales::comma_format(), breaks = scales::pretty_breaks(n = 5)) +
     theme(axis.text.x = element_text(angle=315, vjust = 0.5), text = element_text(size = 7), 
-          plot.title = element_text(size = 8)) +
+          plot.title = element_text(size = 8), legend.position = c(0.15, 0.85)) +
     ylab("Dollar Amount of Net Share Repurchases (millions)") + xlab("Quarter") +
     ggtitle(paste0("Dollar amount of net repurchases by quarter since ", min(data_filtered$year)))
   
