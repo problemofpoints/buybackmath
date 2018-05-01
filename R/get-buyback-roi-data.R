@@ -68,4 +68,5 @@ data_to_use <- data %>%
 # save data -------------------------------------------------------------
 
 saveRDS(data_to_use, "data/buyback-roi-data.rds")
+saveRDS(stock_prices, "data/stock-prices.rds")
 
