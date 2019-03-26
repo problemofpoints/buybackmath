@@ -10,12 +10,12 @@ library(tidyquant)
 
 # input variables ---------------------------------------------------------
 
-from_date <- as.Date("2013-01-01")
-to_date <- as.Date("2017-12-31")
+from_date <- as.Date("2014-01-01")
+to_date <- as.Date("2018-12-31")
 
 # import buyback data from spreadsheet ------------------------------------
 
-data <- readxl::read_xlsx("data-raw/insurer_buybacks.xlsx", sheet = "import") %>%
+data <- readxl::read_xlsx("data-raw/insurer_buybacks_2018.xlsx", sheet = "import") %>%
   gather(key = "statistic", value = "value", -ticker, -company) %>%
   separate(statistic, c("yr_qtr","metric"), sep = "_") %>%
   separate(yr_qtr, c("year","qtr"), sep = 4, remove = FALSE) %>%
@@ -67,6 +67,6 @@ data_to_use <- data %>%
 
 # save data -------------------------------------------------------------
 
-saveRDS(data_to_use, "data/buyback-roi-data.rds")
-saveRDS(stock_prices, "data/stock-prices.rds")
+saveRDS(data_to_use, "data/buyback-roi-data-2018.rds")
+saveRDS(stock_prices, "data/stock-prices-2018.rds")
 

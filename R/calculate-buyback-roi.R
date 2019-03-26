@@ -11,29 +11,25 @@ library(tibbletime)
 library(lubridate)
 library(tidyquant)
 library(flextable)
-library(AonECM)
+library(popformatting)
 library(officer)
 library(patchwork)
 
-AonInternal::SetTheme()
-aon_colors <- c("#0083A9", "#808080", "#BFBFBF", "#5EB6E4", "#F0AB00", "#7AB800", 
-                "#6E267B", "#BC5FCD","#E9CAEE", "#D3CD8B", "#7E7830", "#3E5B00", "#E11B22")
-
-AonECM::ggSetTheme()
+popformatting::gg_set_theme()
 
 
 # import data -------------------------------------------------------------
 
-data_to_use <- readRDS("data/buyback-roi-data.rds")
-stock_prices <- readRDS("data/stock-prices.rds")
+data_to_use <- readRDS("data/buyback-roi-data-2018.rds")
+stock_prices <- readRDS("data/stock-prices-2018.rds")
 
 # buyback roi calculations ------------------------------------------------
 
 data_to_use <- data_to_use %>%
   mutate(cum_shares_repurchased = cumsum(sharesrepurchased)) %>%
   mutate(cash_flow = -dollarrepurchase + (commondivpershare + specdivpershare) * cum_shares_repurchased,
-         cash_flow_final = cash_flow + if_else(year == 2017 & qtr_ == 4, close * cum_shares_repurchased, 0),
-         cash_flow_final2 = cash_flow + if_else(year == 2017 & qtr_ == 4, adjusted * cum_shares_repurchased, 0))
+         cash_flow_final = cash_flow + if_else(year == 2018 & qtr_ == 4, close * cum_shares_repurchased, 0),
+         cash_flow_final2 = cash_flow + if_else(year == 2018 & qtr_ == 4, adjusted * cum_shares_repurchased, 0))
 
 buyback_roi <- data_to_use %>% 
   summarise(n_qtrs = n(),
@@ -67,7 +63,7 @@ buyback_roi_output <- buyback_roi %>%
 ft_buyback_summary1 <- buyback_roi_output %>%
   slice(1:25) %>%
   regulartable() %>%
-  ft_theme_aon() %>%
+  ft_theme() %>%
   fontsize(part = "all", size = 8) %>%
   autofit(add_w = 0.05, add_h = 0.0) %>%
   height_all(height = 0.2, part = "body") %>%
@@ -81,10 +77,10 @@ gg_roi_scatter <- buyback_roi %>%
   geom_point() +
   ggrepel::geom_text_repel(aes(label = ticker), size = 2, colour = aon.colors$darkgray, 
                            segment.color = aon.colors$lightgray, segment.size = 0.25, force = 2) +
-  scale_x_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
-                     limits = c(-0.25, 0.75)) +
-  scale_y_continuous(labels = scales::percent_format(), breaks = seq(from = -0.25, to = 0.75, by = 0.1),
-                     limits = c(-0.25, 0.75)) +
+  scale_x_continuous(labels = scales::percent_format(), breaks = seq(from = -0.3, to = 0.4, by = 0.1),
+                     limits = c(-0.3, 0.4)) +
+  scale_y_continuous(labels = scales::percent_format(), breaks = seq(from = -0.2, to = 0.2, by = 0.1),
+                     limits = c(-0.2, 0.2)) +
   scale_size_continuous(name = "% of Mkt Cap \n Repurchased", 
                     labels = scales::percent_format()) +
   xlab("Buyback ROI") + ylab("Buyback Effectiveness") +
@@ -100,12 +96,12 @@ gg_col_roi <- buyback_roi %>%
   geom_text(aes(y = y_irr, x = ticker, label = pct_format(irr, digits = 0)), size = 3) +
   coord_flip() +
   scale_y_continuous(labels = scales::percent_format(), 
-                     breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
-                     limits = c(-0.25, 0.75)) +
+                     breaks = seq(from = -0.5, to = 0.4, by = 0.1), 
+                     limits = c(-0.5, 0.4)) +
   xlab(NULL) + ylab("Buyback ROI") +
   theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed"),
         panel.grid.major.y = element_blank()) +
-  ggtitle("Buyback ROI by Company (2013 - 2017)")
+  ggtitle("Buyback ROI by Company (2014 - 2018)")
 
 gg_col_eff <- buyback_roi %>%
   filter(!is.na(buyback_effectiveness) & buyback_effectiveness > -1) %>%
@@ -116,12 +112,12 @@ gg_col_eff <- buyback_roi %>%
   geom_text(aes(y = y_irr, x = ticker, label = pct_format(buyback_effectiveness, digits = 0)), size = 3) +
   coord_flip() +
   scale_y_continuous(labels = scales::percent_format(), 
-                     breaks = seq(from = -0.25, to = 0.75, by = 0.1), 
-                     limits = c(-0.25, 0.75)) +
+                     breaks = seq(from = -0.5, to = 0.4, by = 0.1), 
+                     limits = c(-0.5, 0.4)) +
   xlab(NULL) + ylab("Buyback ROI") +
   theme(panel.grid.major.x = element_line(color = aon.colors$lightergray, linetype = "dashed"),
         panel.grid.major.y = element_blank()) +
-  ggtitle("Buyback Effectiveness by Company (2013 - 2017)")
+  ggtitle("Buyback Effectiveness by Company (2014 - 2018)")
 
 
 create_by_company_slide <- function(co_ticker, company_name, data, data_roi, stock_prices, pptx){
@@ -173,7 +169,7 @@ create_by_company_slide <- function(co_ticker, company_name, data, data_roi, sto
   
   ft_buyback_summary <- roi_filtered %>%
     regulartable() %>%
-    ft_theme_aon() %>%
+    ft_theme() %>%
     fontsize(part = "all", size = 8) %>%
     autofit(add_w = 0.05, add_h = 0.0) %>%
     height_all(height = 0.2, part = "body") %>%
@@ -239,7 +235,7 @@ walk2(unique(data_to_use$ticker), unique(data_to_use$company),
 
 
 # write out slide deck
-print(pptx, target = "P&C (Re)Insurers Share Buyback ROI_2013-2017.pptx") %>% invisible()
+print(pptx, target = "P&C (Re)Insurers Share Buyback ROI_2014-2018.pptx") %>% invisible()
 
 
 
